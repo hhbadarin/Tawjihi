@@ -3,8 +3,8 @@ from openpyxl.styles import Border, Side, Alignment, Font, PatternFill
 import os
 
 # Expand file paths
-input_path = os.path.expanduser('~/Desktop/Tawsplit.xlsx')
-output_path = os.path.expanduser('~/Desktop/المكلفون بالعمل في الثانوية العامة 2025 - الدفعة السادسة.xlsx')
+input_path = os.path.expanduser('~/Desktop/توزيع الغياب حسب القاعة.xlsx')
+output_path = os.path.expanduser('~/Desktop/ توزيع الغياب حسب القاعة.xlsx')
 
 # Load workbook
 wb = load_workbook(input_path)
@@ -14,8 +14,8 @@ thin = Side(style='thin')
 full_border = Border(top=thin, left=thin, right=thin, bottom=thin)
 center_wrap_align = Alignment(horizontal='center', vertical='center', wrap_text=True)
 
-header_font = Font(size=18, color='FFFFFF', bold=True)
-cell_font = Font(size=15)
+header_font = Font(size=16, color='FFFFFF', bold=True)
+cell_font = Font(size=13)
 header_fill = PatternFill(fill_type="solid", start_color="4287f5")
 
 for sheet in wb.worksheets:
@@ -24,20 +24,21 @@ for sheet in wb.worksheets:
     # Page setup
     ws.page_margins.top = 0.85
     ws.page_margins.bottom = 0.5
-    ws.page_margins.left = 0.3
-    ws.page_margins.right = 0.3
+    ws.page_margins.left = 0.4
+    ws.page_margins.right = 0.4
     ws.page_margins.header = 0.35
     ws.page_margins.footer = 0.3
     ws.page_setup.paperSize = ws.PAPERSIZE_A4
-    ws.page_setup.orientation = ws.ORIENTATION_LANDSCAPE
+    ws.page_setup.orientation = ws.ORIENTATION_PORTRAIT
     ws.page_setup.horizontalCentered = True
     ws.page_setup.fitToWidth = 1
     ws.page_setup.fitToHeight = 999
     ws.sheet_properties.pageSetUpPr.fitToPage = True
 
     # Header/footer
-    ws.oddHeader.center.text = '&"Arial,Bold"&30 ملحق المكلفون بالعمل في الثانوية العامة 2025 (المراقبة) / الدفعة السادسة'
+    ws.oddHeader.center.text = '&"Arial,Bold"&25 توزيع الغياب حسب القاعة'
     ws.oddFooter.right.text = "&17 صفحة &P من &N"
+    #ws.oddFooter.left.text = "&17 " + ws.title  # Add sheet name as left footer
 
     # Header row height
     ws.row_dimensions[1].height = 45
