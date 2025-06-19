@@ -4,7 +4,7 @@ import os
 
 # Expand file paths
 input_path = os.path.expanduser('~/Desktop/توزيع الغياب حسب القاعة.xlsx')
-output_path = os.path.expanduser('~/Desktop/ توزيع الغياب حسب القاعة.xlsx')
+output_path = os.path.expanduser('~/Desktop/توزيع الغياب حسب القاعة محدث.xlsx')
 
 # Load workbook
 wb = load_workbook(input_path)
@@ -37,8 +37,8 @@ for sheet in wb.worksheets:
 
     # Header/footer
     ws.oddHeader.center.text = '&"Arial,Bold"&25 توزيع الغياب حسب القاعة'
-    ws.oddFooter.right.text = "&17 صفحة &P من &N"
-    #ws.oddFooter.left.text = "&17 " + ws.title  # Add sheet name as left footer
+    ws.oddFooter.right.text = "&12 صفحة &P من &N"
+    ws.oddFooter.left.text = "&12 &D"  # Add current date as left footer
 
     # Header row height
     ws.row_dimensions[1].height = 45

@@ -4,7 +4,7 @@ import os
 import shutil
 
 # Load original workbook
-input_path = os.path.expanduser('~/Desktop/B.xlsx')
+input_path = os.path.expanduser('~/Desktop/توزيع الغياب حسب القاعة محدث.xlsx')
 original_wb = load_workbook(input_path)
 
 # Create output folder
