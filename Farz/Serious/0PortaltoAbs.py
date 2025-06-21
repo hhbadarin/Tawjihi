@@ -15,11 +15,6 @@ df = pd.read_csv(input_path, encoding='utf-8-sig')
 columns_to_extract = ['رقم الجلوس', 'اسم الطالب', 'الجنس', 'القاعة', 'الفرع']
 df_extracted = df[columns_to_extract]
 
-# Save to Excel
-df_extracted.to_excel(output_path, index=False)
-
-print("File saved successfully:", output_path)
-
 # Function to fix Arabic text display in specified columns
 def fix_arabic_column(df, columns):
     for col in columns:
@@ -38,7 +33,18 @@ count_by_hall = df_extracted.groupby('القاعة')['اسم الطالب'].coun
 count_by_hall.columns = ['القاعة', 'عدد الطلاب']
 count_by_hall = fix_arabic_column(count_by_hall, ['القاعة'])
 
-# Print branch count table
+# Save all tables to Excel in separate sheets
+with pd.ExcelWriter(output_path, engine='xlsxwriter') as writer:
+    # Detailed extracted data
+    df_extracted.to_excel(writer, sheet_name='Students', index=False)
+    # Count by branch summary
+    count_by_branch.to_excel(writer, sheet_name='Count by Branch', index=False)
+    # Count by hall summary
+    count_by_hall.to_excel(writer, sheet_name='Count by Hall', index=False)
+
+print("File saved successfully with multiple sheets:", output_path)
+
+# Optional: Print branch count table
 print("\n" + get_display(arabic_reshaper.reshape("عدد الطلاب لكل فرع:")))
 count_by_branch_rtl = count_by_branch[['عدد الطلاب', 'الفرع']]
 print(tabulate(
@@ -49,7 +55,7 @@ print(tabulate(
     colalign=("center", "center")
 ))
 
-# Print hall count table
+# Optional: Print hall count table
 print("\n" + get_display(arabic_reshaper.reshape("عدد الطلاب لكل قاعة:")))
 count_by_hall_rtl = count_by_hall[['عدد الطلاب', 'القاعة']]
 print(tabulate(
