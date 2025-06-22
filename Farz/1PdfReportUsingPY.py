@@ -3,8 +3,8 @@ from openpyxl.styles import Border, Side, Alignment, Font, PatternFill
 import os
 
 # Expand file paths
-input_path = os.path.expanduser('~/Desktop/توزيع الغياب حسب القاعة.xlsx')
-output_path = os.path.expanduser('~/Desktop/توزيع الغياب حسب القاعة محدث.xlsx')
+input_path = os.path.expanduser('~/Desktop/nhebron-Abs.xlsx')
+output_path = os.path.expanduser('~/Desktop/توزيع الغياب حسب القاعة.xlsx')
 
 # Load workbook
 wb = load_workbook(input_path)
