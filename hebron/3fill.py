@@ -9,7 +9,7 @@ today_str_short = today.strftime('%d-%m')    # e.g., 27-06
 
 # Get user input
 district_en = input("Enter the English name of the directorate (e.g., hebron): ").strip()
-district_ar = input("أدخل الاسم العربي للمديرية (مثال: الخليل): ").strip()
+district_ar = input("Enter the Arabic name of the directorate (e.g., الخليل): ").strip()
 
 # Get current username to build Desktop path
 username = os.getlogin()
