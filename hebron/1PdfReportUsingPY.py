@@ -2,20 +2,19 @@ from openpyxl import load_workbook
 from openpyxl.styles import Border, Side, Alignment, Font, PatternFill
 from datetime import datetime
 import os
-import re
+
+# Ask user for directorate names
+district_name_en = input("Please enter the directorate name in English (e.g., hebron): ").strip()
+district_name_ar = input("Please enter the directorate name in Arabic (e.g., الخليل): ").strip()
 
 # Get today's date in the required formats
 today = datetime.today()
 today_str = today.strftime('%d-%m-%Y')             # e.g., 26-06-2025
 today_short = today.strftime('%d-%m')              # e.g., 26-06
 
-# Build dynamic file paths
-input_path = os.path.expanduser(f'~/Desktop/hebron-{today_str}/{today_str} توزيع غياب الخليل.xlsx')
-output_path = os.path.expanduser(f'~/Desktop/hebron-{today_str}/{today_short} توزيع غياب الخليل منسق.xlsx')
-
-# Extract the district name from the input filename dynamically
-match = re.search(r'توزيع غياب (.+)\.xlsx$', input_path)
-district_name = match.group(1) if match else "المديرية"  # fallback if no match
+# Build dynamic file paths using user inputs
+input_path = os.path.expanduser(f'~/Desktop/{district_name_en}-{today_str}/{today_str} توزيع غياب {district_name_ar}.xlsx')
+output_path = os.path.expanduser(f'~/Desktop/{district_name_en}-{today_str}/{today_short} توزيع غياب {district_name_ar} منسق.xlsx')
 
 # Load workbook
 wb = load_workbook(input_path)
@@ -46,8 +45,8 @@ for sheet in wb.worksheets:
     ws.page_setup.fitToHeight = 999
     ws.sheet_properties.pageSetUpPr.fitToPage = True
 
-    # Header/footer with district and date on new line
-    ws.oddHeader.center.text = f'&"Arial,Bold"&20 توزيع الغياب في مديرية {district_name}\n{today_str}'
+    # Header/footer with Arabic district name and date on new line
+    ws.oddHeader.center.text = f'&"Arial,Bold"&20 توزيع الغياب في مديرية {district_name_ar}\n{today_str}'
     ws.oddFooter.right.text = "&12 صفحة &P من &N"
     ws.oddFooter.left.text = "&12 &D"
 
@@ -104,3 +103,5 @@ for sheet in wb.worksheets:
 
 # Save workbook
 wb.save(output_path)
+
+print(f"\n✅ تم حفظ الملف المنسق: {output_path}")

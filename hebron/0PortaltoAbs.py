@@ -8,19 +8,23 @@ import unicodedata
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
 
+# Get user inputs
+folder_prefix = input("Please enter the directorate's name in english (e.g., hebron): ").strip()
+location_name = input("Please enter the directorate's name in Arabic (e.g., الخليل): ").strip()
+
 # Get today's date
 today_str = datetime.today().strftime('%d-%m-%Y')
 
 # Paths and filenames
 desktop_path = os.path.expanduser('~/Desktop')
-folder_name = f'hebron-{today_str}'
+folder_name = f'{folder_prefix}-{today_str}'
 folder_path = os.path.join(desktop_path, folder_name)
 
 # Create output folder
 os.makedirs(folder_path, exist_ok=True)
 
 # Move CSV from Desktop to folder
-input_filename = f'hebron-{today_str}.csv'
+input_filename = f'{folder_prefix}-{today_str}.csv'
 original_input_path = os.path.join(desktop_path, input_filename)
 new_input_path = os.path.join(folder_path, input_filename)
 
@@ -31,7 +35,7 @@ else:
 
 # Set input/output file paths
 input_path = new_input_path
-output_filename = f'{today_str} توزيع غياب الخليل.xlsx'
+output_filename = f'{today_str} توزيع غياب {location_name}.xlsx'
 output_path = os.path.join(folder_path, output_filename)
 
 # Load CSV
