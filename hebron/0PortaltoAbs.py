@@ -109,10 +109,3 @@ count_by_hall_rtl = fix_arabic_column(count_by_hall.copy(), ['القاعة'])[['
 print(tabulate(count_by_hall_rtl,
                headers=[get_display(arabic_reshaper.reshape('عدد الطلاب')), get_display(arabic_reshaper.reshape('القاعة'))],
                tablefmt='fancy_grid', showindex=False, colalign=("center", "center")))
-
-# Export "الأعداد حسب الفرع" as a separate Excel file
-separate_branch_filename = f'{today_str} الأعداد حسب الفرع.xlsx'
-separate_branch_path = os.path.join(folder_path, separate_branch_filename)
-count_by_branch.to_excel(separate_branch_path, index=False)
-
-print("\n✅ ملف 'الأعداد حسب الفرع' تم حفظه بشكل منفصل:", separate_branch_path)
