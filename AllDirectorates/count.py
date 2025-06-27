@@ -12,24 +12,29 @@ start_row, end_row = 14, 109
 expected_max = 85
 check_interval = 5  # seconds
 
-def count_non_empty():
+def get_non_empty_with_trigger_cell():
     wb = load_workbook(file_path, data_only=True)
     ws = wb[sheet_name]
     count = 0
+    trigger_cell = None
     for row in range(start_row, end_row + 1):
-        value = ws[f"{column}{row}"].value
+        cell_ref = f"{column}{row}"
+        value = ws[cell_ref].value
         if value is not None and str(value).strip() != "":
             count += 1
-    return count
+            if count > expected_max and trigger_cell is None:
+                trigger_cell = cell_ref
+    return count, trigger_cell
 
 print(f"🔁 Monitoring {column}{start_row}:{column}{end_row}...")
 print(f"🔔 Alert if non-empty values exceed {expected_max}\n")
 
 try:
     while True:
-        current_count = count_non_empty()
+        current_count, trigger_cell = get_non_empty_with_trigger_cell()
         if current_count > expected_max:
             print(f"⚠️ {current_count} entries detected! Limit = {expected_max}")
+            print(f"🚨 Entry that triggered alert: {trigger_cell}")
             winsound.Beep(1000, 800)
         else:
             print(f"✅ OK: {current_count} entries")
