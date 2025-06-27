@@ -5,19 +5,21 @@ from tabulate import tabulate
 import arabic_reshaper
 from bidi.algorithm import get_display
 import unicodedata
+import matplotlib.pyplot as plt
+from matplotlib.backends.backend_pdf import PdfPages
 
-# Get today's date in the desired format
+# Get today's date
 today_str = datetime.today().strftime('%d-%m-%Y')
 
-# Define folder and file paths
+# Paths and filenames
 desktop_path = os.path.expanduser('~/Desktop')
 folder_name = f'hebron-{today_str}'
 folder_path = os.path.join(desktop_path, folder_name)
 
-# Create the folder if it doesn't exist
+# Create output folder
 os.makedirs(folder_path, exist_ok=True)
 
-# Move the original CSV file from Desktop to the new folder
+# Move CSV from Desktop to folder
 input_filename = f'hebron-{today_str}.csv'
 original_input_path = os.path.join(desktop_path, input_filename)
 new_input_path = os.path.join(folder_path, input_filename)
@@ -27,72 +29,61 @@ if os.path.exists(original_input_path):
 else:
     raise FileNotFoundError(f"File not found on Desktop: {original_input_path}")
 
-# Set input and output file paths
+# Set input/output file paths
 input_path = new_input_path
 output_filename = f'{today_str} توزيع غياب الخليل.xlsx'
 output_path = os.path.join(folder_path, output_filename)
 
-# Load CSV file with semicolon as delimiter
+# Load CSV
 df = pd.read_csv(input_path, encoding='utf-8-sig', sep=',')
-
-# Normalize and clean column names
 df.columns = [unicodedata.normalize("NFKC", col).strip() for col in df.columns]
 
-# Debug: show actual column names
+# Debug column names
 print("Actual columns in the CSV file:")
 for col in df.columns:
     print(repr(col))
 
-# Define required columns
+# Extract required columns
 columns_to_extract = ['اسم الطالب', 'رقم الجلوس', 'الفرع', 'الجنس', 'القاعة']
-
-# Check for missing columns
 missing_columns = [col for col in columns_to_extract if col not in df.columns]
 if missing_columns:
-    raise KeyError(f"The following required columns are missing from the CSV: {missing_columns}")
+    raise KeyError(f"Missing columns: {missing_columns}")
 
-# Extract the desired columns
 df_extracted = df[columns_to_extract]
 
-# Function to fix Arabic text display for console printing only
+# Arabic fix for printing only
 def fix_arabic_column(df, columns):
     for col in columns:
-        df[col] = df[col].apply(
-            lambda x: get_display(arabic_reshaper.reshape(str(x))) if pd.notnull(x) else x
-        )
+        df[col] = df[col].apply(lambda x: get_display(arabic_reshaper.reshape(str(x))) if pd.notnull(x) else x)
     return df
 
-# Check for duplicates in 'رقم الجلوس'
+# Duplicates
 duplicate_ids = df_extracted[df_extracted.duplicated(subset='رقم الجلوس', keep=False)]
 has_duplicates = not duplicate_ids.empty
 
 if has_duplicates:
     print("\n" + get_display(arabic_reshaper.reshape("تحذير: توجد أرقام جلوس مكررة!")))
-    duplicate_ids_rtl = duplicate_ids.copy()
-    duplicate_ids_rtl = fix_arabic_column(duplicate_ids_rtl, ['اسم الطالب', 'رقم الجلوس', 'الفرع', 'القاعة', 'الجنس'])
+    duplicate_ids_rtl = fix_arabic_column(duplicate_ids.copy(), ['اسم الطالب', 'رقم الجلوس', 'الفرع', 'القاعة', 'الجنس'])
     duplicate_ids_rtl = duplicate_ids_rtl[['رقم الجلوس', 'اسم الطالب', 'الجنس', 'الفرع', 'القاعة']]
-
     print(tabulate(
         duplicate_ids_rtl,
         headers=[get_display(arabic_reshaper.reshape(h)) for h in ['رقم الجلوس', 'اسم الطالب', 'الجنس', 'الفرع', 'القاعة']],
-        tablefmt='fancy_grid',
-        showindex=False,
-        colalign=("center", "center", "center", "center", "center")
+        tablefmt='fancy_grid', showindex=False, colalign=("center",)*5
     ))
 else:
     print("\n" + get_display(arabic_reshaper.reshape("لا توجد أرقام جلوس مكررة.")))
 
-# Count of الطلاب by branch and hall
+# Count summaries
 count_by_branch = df_extracted.groupby('الفرع')['اسم الطالب'].count().reset_index()
 count_by_branch.columns = ['الفرع', 'عدد الطلاب']
 
 count_by_hall = df_extracted.groupby('القاعة')['اسم الطالب'].count().reset_index()
 count_by_hall.columns = ['القاعة', 'عدد الطلاب']
 
-# Sort by الفرع
+# Sort
 df_extracted = df_extracted.sort_values(by='الفرع')
 
-# Save to Excel with multiple sheets
+# Excel export
 with pd.ExcelWriter(output_path, engine='xlsxwriter') as writer:
     df_extracted.to_excel(writer, sheet_name='الطلاب', index=False)
     count_by_branch.to_excel(writer, sheet_name='الأعداد حسب الفرع', index=False)
@@ -100,29 +91,24 @@ with pd.ExcelWriter(output_path, engine='xlsxwriter') as writer:
     if has_duplicates:
         duplicate_ids.to_excel(writer, sheet_name='تكرار رقم الجلوس', index=False)
 
-print("\nFile saved successfully with multiple sheets:", output_path)
+print("\n✅ Excel file saved:", output_path)
 
-# Console display for counts
+# Print summaries to console
 print("\n" + get_display(arabic_reshaper.reshape("عدد الطلاب لكل فرع:")))
-count_by_branch_rtl = count_by_branch.copy()
-count_by_branch_rtl = fix_arabic_column(count_by_branch_rtl, ['الفرع'])
-count_by_branch_rtl = count_by_branch_rtl[['عدد الطلاب', 'الفرع']]
-print(tabulate(
-    count_by_branch_rtl,
-    headers=[get_display(arabic_reshaper.reshape('عدد الطلاب')), get_display(arabic_reshaper.reshape('الفرع'))],
-    tablefmt='fancy_grid',
-    showindex=False,
-    colalign=("center", "center")
-))
+count_by_branch_rtl = fix_arabic_column(count_by_branch.copy(), ['الفرع'])[['عدد الطلاب', 'الفرع']]
+print(tabulate(count_by_branch_rtl,
+               headers=[get_display(arabic_reshaper.reshape('عدد الطلاب')), get_display(arabic_reshaper.reshape('الفرع'))],
+               tablefmt='fancy_grid', showindex=False, colalign=("center", "center")))
 
 print("\n" + get_display(arabic_reshaper.reshape("عدد الطلاب لكل قاعة:")))
-count_by_hall_rtl = count_by_hall.copy()
-count_by_hall_rtl = fix_arabic_column(count_by_hall_rtl, ['القاعة'])
-count_by_hall_rtl = count_by_hall_rtl[['عدد الطلاب', 'القاعة']]
-print(tabulate(
-    count_by_hall_rtl,
-    headers=[get_display(arabic_reshaper.reshape('عدد الطلاب')), get_display(arabic_reshaper.reshape('القاعة'))],
-    tablefmt='fancy_grid',
-    showindex=False,
-    colalign=("center", "center")
-))
+count_by_hall_rtl = fix_arabic_column(count_by_hall.copy(), ['القاعة'])[['عدد الطلاب', 'القاعة']]
+print(tabulate(count_by_hall_rtl,
+               headers=[get_display(arabic_reshaper.reshape('عدد الطلاب')), get_display(arabic_reshaper.reshape('القاعة'))],
+               tablefmt='fancy_grid', showindex=False, colalign=("center", "center")))
+
+# Export "الأعداد حسب الفرع" as a separate Excel file
+separate_branch_filename = f'{today_str} الأعداد حسب الفرع.xlsx'
+separate_branch_path = os.path.join(folder_path, separate_branch_filename)
+count_by_branch.to_excel(separate_branch_path, index=False)
+
+print("\n✅ ملف 'الأعداد حسب الفرع' تم حفظه بشكل منفصل:", separate_branch_path)

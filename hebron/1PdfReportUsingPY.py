@@ -1,10 +1,21 @@
 from openpyxl import load_workbook
 from openpyxl.styles import Border, Side, Alignment, Font, PatternFill
+from datetime import datetime
 import os
+import re
 
-# Expand file paths
-input_path = os.path.expanduser('~/Desktop/hebron-26-06-2025/26-06-2025 توزيع غياب الخليل.xlsx')
-output_path = os.path.expanduser('~/Desktop/hebron-26-06-2025/26-06 توزيع غياب الخليل منسق.xlsx')
+# Get today's date in the required formats
+today = datetime.today()
+today_str = today.strftime('%d-%m-%Y')             # e.g., 26-06-2025
+today_short = today.strftime('%d-%m')              # e.g., 26-06
+
+# Build dynamic file paths
+input_path = os.path.expanduser(f'~/Desktop/hebron-{today_str}/{today_str} توزيع غياب الخليل.xlsx')
+output_path = os.path.expanduser(f'~/Desktop/hebron-{today_str}/{today_short} توزيع غياب الخليل منسق.xlsx')
+
+# Extract the district name from the input filename dynamically
+match = re.search(r'توزيع غياب (.+)\.xlsx$', input_path)
+district_name = match.group(1) if match else "المديرية"  # fallback if no match
 
 # Load workbook
 wb = load_workbook(input_path)
@@ -22,11 +33,11 @@ for sheet in wb.worksheets:
     ws = sheet
 
     # Page setup
-    ws.page_margins.top = 0.85
+    ws.page_margins.top = 1.4
     ws.page_margins.bottom = 0.5
     ws.page_margins.left = 0.4
     ws.page_margins.right = 0.4
-    ws.page_margins.header = 0.35
+    ws.page_margins.header = 0.6  # increased to avoid overlap
     ws.page_margins.footer = 0.3
     ws.page_setup.paperSize = ws.PAPERSIZE_A4
     ws.page_setup.orientation = ws.ORIENTATION_PORTRAIT
@@ -35,10 +46,10 @@ for sheet in wb.worksheets:
     ws.page_setup.fitToHeight = 999
     ws.sheet_properties.pageSetUpPr.fitToPage = True
 
-    # Header/footer
-    ws.oddHeader.center.text = '&"Arial,Bold"&25 توزيع الغياب حسب القاعة'
+    # Header/footer with district and date on new line
+    ws.oddHeader.center.text = f'&"Arial,Bold"&20 توزيع الغياب في مديرية {district_name}\n{today_str}'
     ws.oddFooter.right.text = "&12 صفحة &P من &N"
-    ws.oddFooter.left.text = "&12 &D"  # Add current date as left footer
+    ws.oddFooter.left.text = "&12 &D"
 
     # Header row height
     ws.row_dimensions[1].height = 45
@@ -70,7 +81,7 @@ for sheet in wb.worksheets:
             cell.border = full_border
             if cell.row == 1:
                 cell.font = header_font
-                cell.fill = header_fill  # Add background color to headers
+                cell.fill = header_fill
             else:
                 cell.font = cell_font
 
