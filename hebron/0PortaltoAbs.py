@@ -17,14 +17,23 @@ folder_path = os.path.join(desktop_path, folder_name)
 # Create the folder if it doesn't exist
 os.makedirs(folder_path, exist_ok=True)
 
-# Set input and output file paths
+# Move the original CSV file from Desktop to the new folder
 input_filename = f'hebron-{today_str}.csv'
+original_input_path = os.path.join(desktop_path, input_filename)
+new_input_path = os.path.join(folder_path, input_filename)
+
+if os.path.exists(original_input_path):
+    os.rename(original_input_path, new_input_path)
+else:
+    raise FileNotFoundError(f"File not found on Desktop: {original_input_path}")
+
+# Set input and output file paths
+input_path = new_input_path
 output_filename = f'{today_str} توزيع غياب الخليل.xlsx'
-input_path = os.path.join(folder_path, input_filename)
 output_path = os.path.join(folder_path, output_filename)
 
 # Load CSV file with semicolon as delimiter
-df = pd.read_csv(input_path, encoding='utf-8-sig', sep=';')
+df = pd.read_csv(input_path, encoding='utf-8-sig', sep=',')
 
 # Normalize and clean column names
 df.columns = [unicodedata.normalize("NFKC", col).strip() for col in df.columns]
@@ -35,7 +44,7 @@ for col in df.columns:
     print(repr(col))
 
 # Define required columns
-columns_to_extract = ['اسم الطالب', 'رقم الجلوس', 'الفرع','الجنس', 'القاعة']
+columns_to_extract = ['اسم الطالب', 'رقم الجلوس', 'الفرع', 'الجنس', 'القاعة']
 
 # Check for missing columns
 missing_columns = [col for col in columns_to_extract if col not in df.columns]
@@ -55,11 +64,10 @@ def fix_arabic_column(df, columns):
 
 # Check for duplicates in 'رقم الجلوس'
 duplicate_ids = df_extracted[df_extracted.duplicated(subset='رقم الجلوس', keep=False)]
-
 has_duplicates = not duplicate_ids.empty
+
 if has_duplicates:
     print("\n" + get_display(arabic_reshaper.reshape("تحذير: توجد أرقام جلوس مكررة!")))
-    
     duplicate_ids_rtl = duplicate_ids.copy()
     duplicate_ids_rtl = fix_arabic_column(duplicate_ids_rtl, ['اسم الطالب', 'رقم الجلوس', 'الفرع', 'القاعة', 'الجنس'])
     duplicate_ids_rtl = duplicate_ids_rtl[['رقم الجلوس', 'اسم الطالب', 'الجنس', 'الفرع', 'القاعة']]
