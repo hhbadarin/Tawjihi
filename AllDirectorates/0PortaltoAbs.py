@@ -39,7 +39,7 @@ output_filename = f'{today_str} توزيع غياب {location_name}.xlsx'
 output_path = os.path.join(folder_path, output_filename)
 
 # Load CSV
-df = pd.read_csv(input_path, encoding='utf-8-sig', sep=',')
+df = pd.read_csv(input_path, encoding='utf-8-sig', sep=';')
 df.columns = [unicodedata.normalize("NFKC", col).strip() for col in df.columns]
 
 # Debug column names

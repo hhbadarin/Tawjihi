@@ -22,7 +22,7 @@ input_path = os.path.join(folder_path, f"{district_en}-{today_str_full}.csv")
 output_path = os.path.join(folder_path, f"غياب {district_ar} حسب الفرع {today_str_short}.xlsx")
 
 # Read the CSV file
-df = pd.read_csv(input_path, encoding='utf-8', sep=',')  # Adjust sep if needed
+df = pd.read_csv(input_path, encoding='utf-8', sep=';')  # Adjust sep if needed
 
 # Extract required columns and sort by الفرع
 columns_needed = ['اسم الطالب', 'رقم الجلوس', 'الفرع', 'الجنس', 'القاعة']
